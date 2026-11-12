@@ -941,20 +941,6 @@
                 <h1>한국석유공사 임직원 복지제도 AI 상담 센터</h1>
                 <p>복지팀 승인 표준 FAQ(81건) 및 5대 복지 사규 원문(8종)을 기반으로 신속하고 정확하게 안내합니다.</p>
             </div>
-            <div class="hero-stats">
-                <div class="stat-chip">
-                    <span>1순위 승인 FAQ</span>
-                    <strong>파란색 74건 + 빨간색 7건 (81건)</strong>
-                </div>
-                <div class="stat-chip">
-                    <span>2순위 근거 사규</span>
-                    <strong>5대 복지분야 핵심 사규 8종</strong>
-                </div>
-                <div class="stat-chip">
-                    <span>추가 질의 접수</span>
-                    <strong>구글 폼(Google Form) 연동</strong>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1061,30 +1047,6 @@
                             </li>
                         </ul>
                     </div>
-
-                    <div class="side-widget survey-promo-card">
-                        <div class="widget-title" style="border-bottom-color:#93c5fd;">
-                            <span>📝 복지제도 질의·만족도 설문</span>
-                        </div>
-                        <p class="survey-promo-desc">
-                            챗봇에 없는 추가 질의사항이나 제도 개선 건의사항이 있으신가요? 내장된 <strong>복지제도 질의 설문 폼(Google Form)</strong>을 통해 편리하게 접수하실 수 있습니다.
-                        </p>
-                        <button type="button" class="doc-btn primary full-btn" onclick="switchPortalTab('survey')">
-                            📝 복지제도 질의 설문 폼 열기
-                        </button>
-                    </div>
-
-                    <div class="side-widget">
-                        <div class="widget-title">
-                            <span>📜 탑재된 5대 분야 사규 (8종)</span>
-                        </div>
-                        <p style="font-size:12.5px; color:#475569; line-height:1.6; margin-bottom:10px;">
-                            엑셀 승인 FAQ(81건)를 1순위로 안내하며, 세부 규정 문의 시 아래 8종 사규 원문 조항을 2순위로 자동 탐색합니다.
-                        </p>
-                        <button type="button" class="doc-btn full-btn" onclick="switchPortalTab('statutes')">
-                            📜 5대 분야 사규 8종 전체 보기
-                        </button>
-                    </div>
                 </aside>
             </div>
         </section>
@@ -1149,100 +1111,31 @@
             <div class="section-card">
                 <div class="section-header">
                     <div>
-                        <h2>📝 한국석유공사 복지제도 질의 및 만족도 설문 폼 (Google Form 연동)</h2>
-                        <p>임직원의 추가 질의사항 접수 및 AI 챗봇 이용 만족도 조사를 위한 설문 공간입니다. 실제 구글 폼 URL을 연결하거나 내장 설문 폼을 즉시 사용하실 수 있습니다.</p>
+                        <h2>📝 한국석유공사 복지제도 질의 및 만족도 설문 (Google Form 연동)</h2>
+                        <p>추가 질의사항 접수 및 만족도 조사를 위한 외부 구글 폼(Google Forms) 연결 공간입니다.</p>
                     </div>
                     <button type="button" class="doc-btn primary" onclick="switchPortalTab('consult')">💬 AI 상담창으로 돌아가기</button>
                 </div>
 
-                <div class="gform-container">
-                    <div>
-                        <div class="gform-card" id="builtinSurveyCard">
-                            <div class="gform-top-band"></div>
-                            <div class="gform-body">
-                                <div style="margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid #e2e8f0;">
-                                    <span class="statute-tag">예시 설문 폼 (즉시 응답·테스트 가능)</span>
-                                    <h3 style="font-size:19px; font-weight:800; color:var(--knoc-navy); margin-bottom:6px;">[KNOC 복지팀] 사내 복지제도 추가 질의 및 AI 포털 이용 설문</h3>
-                                    <p style="font-size:13px; color:#475569; line-height:1.6;">
-                                        본 설문 폼은 AI 챗봇으로 해결되지 않은 개별 사례 질의나 복지제도 개선 의견을 접수하기 위한 양식입니다. 제출하신 내용은 복지팀 담당자에게 전달됩니다.
-                                    </p>
-                                </div>
-
-                                <form id="knocWelfareSurveyForm" onsubmit="submitBuiltinSurvey(event)">
-                                    <div class="gform-field">
-                                        <label class="field-title">1. 소속 부서 및 성명 (또는 사번) <span class="req-star">*</span></label>
-                                        <input type="text" id="svUser" class="gform-input" placeholder="예: 인사복지처 홍길동 대리" required>
-                                    </div>
-
-                                    <div class="gform-field">
-                                        <label class="field-title">2. 질의 또는 건의하실 복지제도 분야를 선택해 주세요. <span class="req-star">*</span></label>
-                                        <div class="radio-group">
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="퇴직연금(2775)" checked> 퇴직연금</label>
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="여비(2775/2772)"> 여비(출장)</label>
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="주택대부제도(2768)"> 주택대부제도</label>
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="학자금대부(2774)"> 학자금대부</label>
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="동아리지원(2768)"> 동아리지원</label>
-                                            <label class="radio-chip"><input type="radio" name="svDomain" value="기타 복지제도"> 기타 복지제도</label>
-                                        </div>
-                                    </div>
-
-                                    <div class="gform-field">
-                                        <label class="field-title">3. 사내 복지제도 AI 챗봇의 답변 정확도 및 이용 만족도는 어떠셨나요? <span class="req-star">*</span></label>
-                                        <select id="svRating" class="gform-select" required>
-                                            <option value="매우 만족 (5점)">⭐⭐⭐⭐⭐ 매우 만족 (원하는 규정과 양식을 바로 찾음)</option>
-                                            <option value="만족 (4점)">⭐⭐⭐⭐ 만족 (대체로 정확하고 편리함)</option>
-                                            <option value="보통 (3점)">⭐⭐⭐ 보통 (기본 내용은 확인했으나 추가 문의 필요)</option>
-                                            <option value="미흡 (2점)">⭐⭐ 미흡 (원하는 질문에 대한 답변 보강 필요)</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="gform-field">
-                                        <label class="field-title">4. 상세 질의 내용 또는 챗봇에 추가되었으면 하는 FAQ 질문을 적어주세요. <span class="req-star">*</span></label>
-                                        <textarea id="svQuestion" class="gform-textarea" rows="4" placeholder="궁금하신 세부 상황이나 추가 답변이 필요한 질문 내용을 입력해 주세요..." required></textarea>
-                                    </div>
-
-                                    <div class="gform-field" style="border-bottom:none; margin-bottom:6px;">
-                                        <label class="field-title">5. 답변 회신 희망 연락처 (사내 내선번호 또는 이메일)</label>
-                                        <input type="text" id="svContact" class="gform-input" placeholder="예: 내선 1234 또는 hong@knoc.co.kr">
-                                    </div>
-
-                                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                                        <button type="submit" class="send-btn">📤 설문 및 질의 제출하기</button>
-                                        <button type="button" class="doc-btn" onclick="exportSurveyRecordsCsv()">📥 접수된 설문 내역 다운로드(.csv)</button>
-                                    </div>
-                                </form>
-
-                                <div id="surveySuccessBanner" style="display:none; margin-top:18px; padding:14px 16px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:10px; color:#065f46; font-size:13.5px; font-weight:700;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="iframe-wrapper" id="externalGoogleFormWrapper">
-                            <iframe id="googleFormIframe" src="about:blank" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">로드 중…</iframe>
+                <div style="max-width:860px; margin:0 auto;">
+                    <div class="url-connect-box" style="margin-bottom:20px;">
+                        <h4>🔗 구글 폼(Google Forms) 링크 연결</h4>
+                        <p>생성하신 구글 설문지 주소를 입력하고 <strong>[구글 폼 적용]</strong>을 누르면 아래 화면에 바로 표시되며, 새 창으로도 열 수 있습니다.</p>
+                        <div class="url-input-row">
+                            <input type="url" id="customGoogleFormUrl" class="url-input" placeholder="https://docs.google.com/forms/d/e/.../viewform 주소를 붙여넣으세요">
+                            <button type="button" class="doc-btn primary" onclick="embedExternalGoogleForm()">구글 폼 적용</button>
+                            <button type="button" class="doc-btn" onclick="openExternalGoogleFormNewTab()">↗ 새 창으로 설문 열기</button>
                         </div>
                     </div>
 
-                    <div class="url-connect-box">
-                        <h4>🔗 실제 구글 폼(Google Forms) 링크 연동 설정</h4>
-                        <p>
-                            현재 좌측에는 인터넷 없이도 즉시 시연·제출 테스트가 가능한 <strong>[한국석유공사 복지제도 질의 설문 예시 폼]</strong>이 내장되어 있습니다.<br><br>
-                            만약 생성해 두신 실제 Google Form 주소(<code>https://docs.google.com/forms/...</code>)가 있다면 아래에 입력 후 <strong>[실제 구글 폼 화면에 삽입]</strong>을 누르시면 페이지 안에 해당 구글 폼이 즉시 임베드됩니다.
-                        </p>
-                        <input type="url" id="customGoogleFormUrl" class="gform-input" placeholder="https://docs.google.com/forms/d/e/.../viewform" style="margin-bottom:10px; font-size:13px;">
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            <button type="button" class="doc-btn primary full-btn" onclick="embedExternalGoogleForm()">
-                                🌐 입력한 구글 폼을 이 화면에 삽입(임베드)
-                            </button>
-                            <button type="button" class="doc-btn full-btn" onclick="openExternalGoogleFormNewTab()">
-                                ↗️ 새 창으로 구글 폼 열기
-                            </button>
-                            <button type="button" class="doc-btn full-btn" onclick="showBuiltinSurveyForm()">
-                                📋 기본 내장 설문 폼(예시) 다시 보기
-                            </button>
-                        </div>
-                        <div style="margin-top:14px; padding-top:12px; border-top:1px dashed #cbd5e1; font-size:12px; color:#64748b; line-height:1.55;">
-                            💡 <strong>코드 내 고정 방법:</strong> HTML 소스코드 내 <code>DEFAULT_GOOGLE_FORM_URL</code> 변수에 구글 폼 주소를 넣어두시면 접속 시 항상 해당 구글 폼이 자동으로 열립니다.
-                        </div>
+                    <div id="builtinSurveyCard" style="padding:40px 24px; text-align:center; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:14px; color:#475569;">
+                        <div style="font-size:32px; margin-bottom:10px;">📝</div>
+                        <div style="font-size:16px; font-weight:800; color:var(--knoc-navy); margin-bottom:6px;">구글 폼(Google Forms) 링크를 연결해 주세요</div>
+                        <p style="font-size:13.5px; color:#64748b; line-height:1.6;">상단 입력창에 구글 설문지 URL을 입력하시면 이 영역에 설문 화면이 바로 표시됩니다.<br>(구글 폼 주소를 채팅으로 알려주시면 코드에 기본 고정해 드립니다.)</p>
+                    </div>
+
+                    <div class="iframe-wrapper" id="externalGoogleFormWrapper">
+                        <iframe id="googleFormIframe" src="about:blank" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0">로드 중…</iframe>
                     </div>
                 </div>
             </div>
