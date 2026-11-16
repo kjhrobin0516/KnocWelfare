@@ -900,10 +900,40 @@
 
     <div class="top-utility-bar">
         <div class="top-utility-left">
-            <span><i class="status-dot"></i><strong>사내 보안 완결형(On-Device) 모드 작동 중</strong> — 외부 네트워크 전송 없음 (보안유출 위험 0%)</span>
+            <span><i class="status-dot" id="apiStatusDot" style="background:#f59e0b;"></i><strong id="apiStatusText">Gemini AI 연동 대기 중 (우측 버튼으로 API 키를 설정해 주세요)</strong></span>
         </div>
         <div class="top-utility-right">
-            <span>지원 범위: 퇴직연금 · 여비 · 주택대부 · 학자금대부 · 동아리지원 (엑셀 승인 81건 + 5대 분야 사규 8종)</span>
+            <span>지원 범위: 퇴직연금 · 여비 · 주택대부 · 학자금대부 · 동아리지원 (승인 FAQ + 사규 8종)</span>
+            <button type="button" id="openApiModalBtn" onclick="openApiKeyModal()" style="background:#0056b3; color:#ffffff; border:1px solid #60a5fa; border-radius:6px; padding:3px 10px; font-size:11.5px; font-weight:700; cursor:pointer;">
+                🔑 Google AI API 키 설정
+            </button>
+        </div>
+    </div>
+
+    <div id="apiKeyModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#ffffff; border-radius:16px; width:100%; max-width:460px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.22); border:1px solid #cbd5e1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="color:#002b66; font-size:17px; font-weight:800;">🔑 Google AI Studio (Gemini) API 키 설정</h3>
+                <button type="button" onclick="closeApiKeyModal()" style="background:none; border:none; font-size:18px; color:#64748b; cursor:pointer;">✕</button>
+            </div>
+            <p style="font-size:12.5px; color:#475569; line-height:1.6; margin-bottom:14px;">
+                Google AI Studio에서 발급받은 API 키를 입력하면, 생성형 AI가 공사 사규(8종) 및 승인 FAQ를 분석해 맞춤형 답변을 제공합니다.<br>
+                <span style="color:#0056b3; font-weight:700;">※ 보안 안내:</span> 입력된 키는 GitHub 코드에 저장되지 않으며, 현재 사용 중인 PC 브라우저(LocalStorage)에만 안전하게 보관됩니다.
+            </p>
+            <label style="display:block; font-size:12px; font-weight:700; color:#1e293b; margin-bottom:6px;">Gemini API Key</label>
+            <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy... 로 시작하는 API 키를 붙여넣으세요" style="width:100%; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13.5px; margin-bottom:12px; outline:none;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#1e293b; margin-bottom:6px;">사용 모델 선택</label>
+            <select id="geminiModelSelect" style="width:100%; padding:9px 12px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:13px; margin-bottom:16px; background:#f8fafc;">
+                <option value="gemini-2.5-flash">gemini-2.5-flash (권장 · 빠른 응답 및 사규 분석)</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro (심층 규정 해석 · 복잡한 조건 비교)</option>
+            </select>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <button type="button" onclick="clearApiKey()" style="padding:8px 12px; border:1px solid #fecaca; background:#fef2f2; color:#dc2626; border-radius:8px; cursor:pointer; font-weight:700; font-size:12.5px;">키 삭제</button>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" onclick="closeApiKeyModal()" style="padding:8px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px;">취소</button>
+                    <button type="button" onclick="saveApiKey()" style="padding:8px 18px; border:none; background:#002b66; color:#ffffff; border-radius:8px; cursor:pointer; font-weight:700; font-size:13px;">저장 및 적용</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1147,7 +1177,7 @@
         <div class="footer-inner">
             <div>
                 <strong>한국석유공사 (Korea National Oil Corporation)</strong> | 울산광역시 중구 종가로 305 | 사내 복지제도 AI 질의응답 포털<br>
-                <span>본 시스템은 복지팀 승인 기초데이터(81건) 및 5대 복지분야 사규(8종)에 기반하여 사내 로컬 브라우저에서 안전하게 구동됩니다.</span>
+                <span>본 시스템은 복지팀 승인 기초데이터(81건) 및 5대 복지분야 사규(8종) 원문을 기반으로 Google Gemini AI와 연동하여 답변을 제공합니다.</span>
             </div>
             <div>
                 <span>담당부서: 인사복지처 복지팀 (내선 2775 / 2774 / 2768)</span>
@@ -3417,62 +3447,95 @@
             "동아리", "동아리지원", "동호회", "보조금", "지원금", "창립총회", "활동보고", "특별지원금", "사용용도", "해산", "등록취소", "720만원"
         ];
 
-        function findBestMatch(query) {
+        /* =========================================================================
+           6. 사규 검색(Retrieval) + Google AI Studio(Gemini API) 생성형 응답 엔진
+           ========================================================================= */
+        const chatHistory = [];
+
+        function getSavedApiKey() {
+            return (localStorage.getItem("KNOC_GEMINI_API_KEY") || "").trim();
+        }
+
+        function getSavedModel() {
+            return localStorage.getItem("KNOC_GEMINI_MODEL") || "gemini-2.5-flash";
+        }
+
+        function checkApiKeyStatus() {
+            const key = getSavedApiKey();
+            const model = getSavedModel();
+            const dot = document.getElementById("apiStatusDot");
+            const text = document.getElementById("apiStatusText");
+            const btn = document.getElementById("openApiModalBtn");
+            if (key) {
+                if (dot) dot.style.background = "#22c55e";
+                if (text) text.innerHTML = `<strong>생성형 AI 모드 작동 중 (${model})</strong> — 5대 분야 사규 및 승인 FAQ 기반 실시간 답변`;
+                if (btn) btn.textContent = "🔑 API 키 변경/확인";
+            } else {
+                if (dot) dot.style.background = "#f59e0b";
+                if (text) text.innerHTML = "<strong>기본 검색 모드 작동 중</strong> — 우측 [🔑 Google AI API 키 설정] 입력 시 생성형 AI가 활성화됩니다";
+                if (btn) btn.textContent = "🔑 Google AI API 키 설정";
+            }
+        }
+
+        function openApiKeyModal() {
+            const modal = document.getElementById("apiKeyModal");
+            document.getElementById("geminiApiKeyInput").value = getSavedApiKey();
+            document.getElementById("geminiModelSelect").value = getSavedModel();
+            modal.style.display = "flex";
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById("apiKeyModal").style.display = "none";
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById("geminiApiKeyInput").value.trim();
+            const model = document.getElementById("geminiModelSelect").value;
+            if (!key) {
+                alert("API 키를 입력해 주세요. 키를 지우려면 [키 삭제] 버튼을 눌러주세요.");
+                return;
+            }
+            localStorage.setItem("KNOC_GEMINI_API_KEY", key);
+            localStorage.setItem("KNOC_GEMINI_MODEL", model);
+            closeApiKeyModal();
+            checkApiKeyStatus();
+            alert("Google AI Studio API 키가 저장되었습니다. 이제 생성형 AI가 사규를 바탕으로 답변합니다.");
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem("KNOC_GEMINI_API_KEY");
+            document.getElementById("geminiApiKeyInput").value = "";
+            closeApiKeyModal();
+            checkApiKeyStatus();
+            alert("저장된 API 키가 삭제되었습니다. 기본 사규 검색 모드로 전환됩니다.");
+        }
+
+        /* URL 파라미터(?key=...)로 공유받은 경우 자동 저장 후 주소창에서 키 숨김 처리 */
+        (function initApiKeyFromUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const urlKey = params.get("key");
+                if (urlKey && urlKey.trim().startsWith("AIza")) {
+                    localStorage.setItem("KNOC_GEMINI_API_KEY", urlKey.trim());
+                    params.delete("key");
+                    const cleanUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "") + window.location.hash;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }
+            } catch (e) {}
+        })();
+
+        function scoreAllItems(query) {
             const normQ = normalizeKo(query);
-            if (!normQ) return null;
+            if (!normQ) return { isOutOfDomain: false, ranked: [] };
             const compactQ = normQ.replace(/\s+/g, "");
 
-            /* [규칙 1] 시작 화면 7개 빈출 문의 버튼(빨간색 7개 행) 즉시 직결 */
-            if (compactQ === "제도전환" || compactQ === "dc퇴직연금제도전환부담금은언제입금되나요") return KNOC_DB.find(d => d.id === "퇴직연금_R07");
-            if (compactQ === "중도인출" || compactQ === "중도인출은어떤경우에가능한가요") return KNOC_DB.find(d => d.id === "퇴직연금_R25");
-            if (compactQ === "주택대부상환방법" || compactQ === "주택대부금은어떻게상환하나요") return KNOC_DB.find(d => d.id === "주택대부제도_R10");
-            if (compactQ === "주택용도목적물변경" || compactQ === "대부목적물이변경되었습니다어떻게해야하나요") return KNOC_DB.find(d => d.id === "주택대부제도_R17");
-            if (compactQ === "학자금대부신청서류" || compactQ === "학자금대부신청시서류는어떻게되나요") return KNOC_DB.find(d => d.id === "학자금대부_R08");
-            if (compactQ === "학자금대부신청절차" || compactQ === "학자금대부신청은어떻게하나요") return KNOC_DB.find(d => d.id === "학자금대부_R09");
-            if (compactQ === "출장초과여비정산" || compactQ === "출장품의보다여비가초과집행된경우어떻게정산해야하나요") return KNOC_DB.find(d => d.id === "여비_R19");
-
-            /* [규칙 1-2] 5대 분야 사규 세부 질문 핀셋 라우팅 (거리기준, 단가표, 장기출장, 임차주택기준가, 학자금거치기간 등) */
-            if (compactQ.includes("거리") || compactQ.includes("근거리") || compactQ.includes("40km") || compactQ.includes("15km") || compactQ.includes("30km") || compactQ.includes("2km")) {
-                return KNOC_DB.find(d => d.id === "STAT_TR_DIST");
-            }
-            if ((compactQ.includes("장기출장") || compactQ.includes("장기체재")) || (compactQ.includes("일비") && compactQ.includes("감액") && !compactQ.includes("공용차량"))) {
-                return KNOC_DB.find(d => d.id === "STAT_TR_LONG");
-            }
-            if (compactQ.includes("친지") || compactQ.includes("공용차량") || ((compactQ.includes("일비") || compactQ.includes("식비") || compactQ.includes("숙박비")) && (compactQ.includes("얼마") || compactQ.includes("단가") || compactQ.includes("상한") || compactQ.includes("한도") || compactQ.includes("기준") || compactQ.includes("국내")) && !compactQ.includes("임원") && !compactQ.includes("중식") && !compactQ.includes("전날") && !compactQ.includes("초과") && !compactQ.includes("새벽") && !compactQ.includes("국외") && !compactQ.includes("해외"))) {
-                return KNOC_DB.find(d => d.id === "STAT_TR_DOM");
-            }
-            if ((compactQ.includes("국외여비") || compactQ.includes("해외여비") || compactQ.includes("가등급") || compactQ.includes("나등급") || compactQ.includes("다등급")) || ((compactQ.includes("국외") || compactQ.includes("해외")) && (compactQ.includes("일비") || compactQ.includes("숙박비") || compactQ.includes("식비") || compactQ.includes("단가")) && !compactQ.includes("전날") && !compactQ.includes("초과"))) {
-                return KNOC_DB.find(d => d.id === "STAT_TR_OVERSEAS");
-            }
-            if (compactQ.includes("이전료") || compactQ.includes("이사화물") || compactQ.includes("5톤") || compactQ.includes("75톤") || compactQ.includes("가족여비")) {
-                return KNOC_DB.find(d => d.id === "STAT_TR_MOVE");
-            }
-            if (compactQ.includes("임차주택") || compactQ.includes("임차사택") || compactQ.includes("기준가") || compactQ.includes("단신부임") || compactQ.includes("울산지사") || compactQ.includes("거제지사") || compactQ.includes("평택지사") || compactQ.includes("서산지사") || compactQ.includes("여수지사") || compactQ.includes("곡성지사") || compactQ.includes("동해지사")) {
-                if (compactQ.includes("관리비") || compactQ.includes("중개수수료") || compactQ.includes("퇴거") || compactQ.includes("전대")) {
-                    return KNOC_DB.find(d => d.id === "STAT_HL_03");
-                }
-                return KNOC_DB.find(d => d.id === "STAT_HL_02");
-            }
-            if ((compactQ.includes("학자금") || compactQ.includes("대학") || compactQ.includes("4년제") || compactQ.includes("2년제") || compactQ.includes("전문대")) && (compactQ.includes("거치") || compactQ.includes("상환기간") || compactQ.includes("몇년") || compactQ.includes("60개월") || compactQ.includes("36개월") || compactQ.includes("신청기한"))) {
-                return KNOC_DB.find(d => d.id === "STAT_SL_01");
-            }
-
-            /* [규칙 2] 5대 지정 영역 외 질문(기념품, 복지포인트, 건강검진, 콘도 등) 즉시 차단 */
+            /* 5대 지정 영역 외 질문(기념품, 복지포인트, 건강검진, 콘도 등) 판별 */
             const hasAllowedDomain = ALLOWED_5_DOMAIN_KEYWORDS.some(kw => compactQ.includes(kw));
             const hasOutDomain = OUT_OF_DOMAIN_KEYWORDS.some(kw => compactQ.includes(kw));
-            if (hasOutDomain && !hasAllowedDomain) return null;
-            if (!hasAllowedDomain) return null;
-
-            /* [규칙 3] 주택/학자금을 특정하지 않은 포괄적 "대부금 상환 방법" 질문 시 통합 안내 */
-            const hasRepayWord = compactQ.includes("상환") || compactQ.includes("갚");
-            const hasPartialOrEarlyOrDelay = compactQ.includes("일부") || compactQ.includes("전액") || compactQ.includes("중도") || compactQ.includes("연체") || compactQ.includes("선납") || compactQ.includes("퇴직") || compactQ.includes("해외발령") || compactQ.includes("중퇴") || compactQ.includes("거치") || compactQ.includes("기간");
-            const hasHousingWord = compactQ.includes("주택") || compactQ.includes("전세") || compactQ.includes("임차");
-            const hasTuitionWord = compactQ.includes("학자금") || compactQ.includes("등록금") || compactQ.includes("대학");
-            if (hasRepayWord && !hasPartialOrEarlyOrDelay && !hasHousingWord && !hasTuitionWord) {
-                return KNOC_DB.find(d => d.id === "LOAN_REPAY_ALL");
+            if (hasOutDomain && !hasAllowedDomain) {
+                return { isOutOfDomain: true, ranked: [] };
             }
 
-            /* [규칙 4] 대분류 도메인 단어는 시트 가산점(+20)으로만 사용하고, 세부 주제어(구분/고유키워드) 중심으로 정밀 점수 계산 */
             const rawTokens = normQ.split(" ").filter(t => t.length >= 1);
             const stems = [];
             for (const t of rawTokens) {
@@ -3487,17 +3550,32 @@
             const qHasClub = ["동아리", "특별지원금", "활동보고", "보조금"].some(k => compactQ.includes(k));
             const qHasTravel = ["여비", "출장", "숙박비", "식비", "일비", "교통비", "택시", "전근", "이전비", "이전료", "로밍", "통신비", "취소수수료", "항공권", "심의", "거리", "근거리"].some(k => compactQ.includes(k));
 
-            let bestItem = null;
-            let bestScore = 0;
+            const scoredList = [];
 
             for (const item of KNOC_DB) {
-                if (item.id === "LOAN_REPAY_ALL") continue;
                 let score = 0;
                 const qCompact = normalizeKo(item.q).replace(/\s+/g, "");
                 const catCompact = normalizeKo(item.cat).replace(/\s+/g, "");
                 const aCompact = normalizeKo(item.a).replace(/\s+/g, "");
 
-                /* 1) 시트 도메인 일치 가산점(+20) 및 타 시트 감점(-45) */
+                /* 퀵 버튼 및 핀셋 라우팅 보너스 */
+                if ((compactQ === "제도전환" || compactQ === "dc퇴직연금제도전환부담금은언제입금되나요") && item.id === "퇴직연금_R07") score += 500;
+                if ((compactQ === "중도인출" || compactQ === "중도인출은어떤경우에가능한가요") && item.id === "퇴직연금_R25") score += 500;
+                if ((compactQ === "주택대부상환방법" || compactQ === "주택대부금은어떻게상환하나요") && item.id === "주택대부제도_R10") score += 500;
+                if ((compactQ === "주택용도목적물변경" || compactQ === "대부목적물이변경되었습니다어떻게해야하나요") && item.id === "주택대부제도_R17") score += 500;
+                if ((compactQ === "학자금대부신청서류" || compactQ === "학자금대부신청시서류는어떻게되나요") && item.id === "학자금대부_R08") score += 500;
+                if ((compactQ === "학자금대부신청절차" || compactQ === "학자금대부신청은어떻게하나요") && item.id === "학자금대부_R09") score += 500;
+                if ((compactQ === "출장초과여비정산" || compactQ === "출장품의보다여비가초과집행된경우어떻게정산해야하나요") && item.id === "여비_R19") score += 500;
+
+                if (item.id === "STAT_TR_DIST" && (compactQ.includes("거리") || compactQ.includes("근거리") || compactQ.includes("40km") || compactQ.includes("15km") || compactQ.includes("30km") || compactQ.includes("2km"))) score += 300;
+                if (item.id === "STAT_TR_LONG" && ((compactQ.includes("장기출장") || compactQ.includes("장기체재")) || (compactQ.includes("일비") && compactQ.includes("감액") && !compactQ.includes("공용차량")))) score += 300;
+                if (item.id === "STAT_TR_DOM" && (compactQ.includes("친지") || compactQ.includes("공용차량") || ((compactQ.includes("일비") || compactQ.includes("식비") || compactQ.includes("숙박비")) && (compactQ.includes("얼마") || compactQ.includes("단가") || compactQ.includes("상한") || compactQ.includes("한도") || compactQ.includes("기준") || compactQ.includes("국내"))))) score += 260;
+                if (item.id === "STAT_TR_OVERSEAS" && ((compactQ.includes("국외여비") || compactQ.includes("해외여비") || compactQ.includes("가등급") || compactQ.includes("나등급") || compactQ.includes("다등급")) || ((compactQ.includes("국외") || compactQ.includes("해외")) && (compactQ.includes("일비") || compactQ.includes("숙박비") || compactQ.includes("식비") || compactQ.includes("단가"))))) score += 260;
+                if (item.id === "STAT_TR_MOVE" && (compactQ.includes("이전료") || compactQ.includes("이사화물") || compactQ.includes("5톤") || compactQ.includes("75톤") || compactQ.includes("가족여비"))) score += 260;
+                if ((item.id === "STAT_HL_02" || item.id === "STAT_HL_03") && (compactQ.includes("임차주택") || compactQ.includes("임차사택") || compactQ.includes("기준가") || compactQ.includes("단신부임") || compactQ.includes("울산지사") || compactQ.includes("거제지사") || compactQ.includes("평택지사") || compactQ.includes("서산지사") || compactQ.includes("여수지사") || compactQ.includes("곡성지사") || compactQ.includes("동해지사"))) score += 260;
+                if (item.id === "STAT_SL_01" && ((compactQ.includes("학자금") || compactQ.includes("대학") || compactQ.includes("4년제") || compactQ.includes("2년제") || compactQ.includes("전문대")) && (compactQ.includes("거치") || compactQ.includes("상환기간") || compactQ.includes("몇년") || compactQ.includes("60개월") || compactQ.includes("36개월") || compactQ.includes("신청기한")))) score += 260;
+
+                /* 시트 도메인 일치 가산점(+20) 및 타 시트 감점(-45) */
                 if (qHasHousing && item.sheet === "주택대부제도") score += 20;
                 else if (qHasTuition && item.sheet === "학자금대부") score += 20;
                 else if (qHasPension && item.sheet === "퇴직연금") score += 20;
@@ -3507,58 +3585,47 @@
                 if (qHasHousing && !qHasTuition && item.sheet === "학자금대부") score -= 45;
                 if (qHasTuition && !qHasHousing && item.sheet === "주택대부제도") score -= 45;
 
-                /* 2) 엑셀 '구분(cat)' 열 고유 카테고리명이 질문에 직접 포함될 때 최우선 가산점(+110) */
                 if (catCompact.length >= 2 && !["신청자격", "적용기준", "채권보전", "채권확보", "채권의담보", "대부신청"].includes(catCompact)) {
-                    if (compactQ.includes(catCompact)) {
-                        score += 110;
-                    }
+                    if (compactQ.includes(catCompact)) score += 110;
                 }
 
-                /* 3) 정밀 큐레이션된 항목별 핵심 키워드 일치 가산점 */
-                for (const kw of item.keywords) {
+                for (const kw of (item.keywords || [])) {
                     const cleanKw = kw.toLowerCase().replace(/[^가-힣a-z0-9]/g, "");
                     if (cleanKw.length >= 2 && compactQ.includes(cleanKw)) {
                         score += 90 + cleanKw.length * 8;
                     }
                 }
 
-                /* 4) 동일 카테고리 내 세부 의도 구분 가중치 (사후관리 대상 vs 서류 vs 위반 등) */
-                if (item.id === "주택대부제도_R13" && compactQ.includes("사후관리") && !compactQ.includes("서류") && !compactQ.includes("위반") && !compactQ.includes("연체")) score += 80;
-                if (item.id === "주택대부제도_R14" && compactQ.includes("사후관리") && compactQ.includes("서류")) score += 120;
-                if (item.id === "주택대부제도_R34" && compactQ.includes("사후관리") && (compactQ.includes("위반") || compactQ.includes("연체"))) score += 120;
-                if (item.id === "퇴직연금_R28" && compactQ.includes("승진보상") && !compactQ.includes("1회") && !compactQ.includes("어디") && !compactQ.includes("규정")) score += 60;
-                if (item.id === "주택대부제도_R15" && compactQ.includes("연장") && !compactQ.includes("종료일") && !compactQ.includes("시스템") && !compactQ.includes("28")) score += 60;
-                if (item.id === "주택대부제도_R17" && (compactQ.includes("목적물") || compactQ.includes("용도변경")) && !compactQ.includes("기간") && !compactQ.includes("언제까지") && !compactQ.includes("신고") && !compactQ.includes("85") && !compactQ.includes("면적")) score += 60;
-
-                /* 5) 불용어를 제외한 핵심 어근(stems)의 질문 원문·구분·답변 포함 점수 */
                 for (const st of stems) {
-                    if (qCompact.includes(st)) {
-                        score += 40 + st.length * 5;
-                    } else if (catCompact.includes(st)) {
-                        score += 30 + st.length * 4;
-                    } else if (aCompact.includes(st)) {
-                        score += 12;
-                    }
+                    if (qCompact.includes(st)) score += 40 + st.length * 5;
+                    else if (catCompact.includes(st)) score += 30 + st.length * 4;
+                    else if (aCompact.includes(st)) score += 12;
                 }
 
-                /* 6) 2글자 바이그램 질문 원문 겹침 보너스 */
                 for (let i = 0; i < compactQ.length - 1; i++) {
                     const bg = compactQ.slice(i, i + 2);
-                    if (!STOP_STEMS.has(bg) && qCompact.includes(bg)) {
-                        score += 6;
-                    }
+                    if (!STOP_STEMS.has(bg) && qCompact.includes(bg)) score += 6;
                 }
 
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestItem = item;
+                if (score > 0) {
+                    scoredList.push({ item, score });
                 }
             }
 
-            return bestScore >= 45 ? bestItem : null;
+            scoredList.sort((a, b) => b.score - a.score);
+            return {
+                isOutOfDomain: !hasAllowedDomain && scoredList.length === 0,
+                ranked: scoredList
+            };
         }
 
-        /* 7. 응답 조립 (엑셀 파란색/빨간색 승인 답변 + 자연스러운 경어체 특이사항 병기 + 출처 + 담당자 내선번호) */
+        function findBestMatch(query) {
+            const res = scoreAllItems(query);
+            if (res.isOutOfDomain || res.ranked.length === 0) return null;
+            return res.ranked[0].score >= 45 ? res.ranked[0].item : null;
+        }
+
+        /* 7. 기본 검색 모드 응답 조립 (API 키 미설정 시 폴백) */
         function buildConversationalResponse(query, item) {
             if (!item) return OUT_OF_SCOPE_FORMATTED;
 
@@ -3575,15 +3642,90 @@
                 }
             }
 
-            /* 마크다운 기호(**, *, #) 완전 제거 */
             body = body.replace(/\*\*/g, "").replace(/^\s*#\s+/gm, "");
-
             const footer = getDeptFooter(item.sheet);
             return `${body}\n\n[출처: ${item.s}]\n${footer}`;
         }
 
-        /* 8. 채팅 메시지 렌더링 및 양식 다운로드 버튼 자동 부착 */
+        /* 8. Google AI Studio (Gemini API) 호출 함수 */
+        async function callGeminiWithStatutes(userQuery, candidateItems, apiKey) {
+            const model = getSavedModel();
 
+            // 후보 사규/FAQ가 적을 경우 8종 핵심 사규 요약도 함께 포함하여 풍부한 컨텍스트 구성
+            const contextItems = [...candidateItems];
+            if (contextItems.length < 5) {
+                STATUTES_8_DOCS.forEach(doc => {
+                    doc.articles.forEach(art => {
+                        if (!contextItems.some(c => c.id === art.id)) {
+                            contextItems.push(art);
+                        }
+                    });
+                });
+            }
+
+            const statutesContext = contextItems.slice(0, 12).map((it, i) => {
+                return `[근거자료 ${i + 1}]
+- 복지분야: ${it.sheet} (${it.cat})
+- 표준질문: ${it.q}
+- 사규내용 및 승인답변: ${it.a}
+- 근거조항: ${it.s}
+- 실무유의사항: ${it.prompt || "없음"}
+- 담당내선: ${getDeptFooter(it.sheet)}`;
+            }).join("\n\n========================================\n\n");
+
+            const systemInstruction = `당신은 한국석유공사(KNOC) 인사복지처 복지팀의 공식 '사내 복지제도 AI 상담 어시스턴트'입니다.
+반드시 아래에 제공된 [한국석유공사 사규 및 복지팀 승인 FAQ 자료]만을 근거로 임직원에게 친절하고 정확하게 답변해 주세요.
+
+[답변 작성 핵심 규칙]
+1. 지원 범위 엄수: '퇴직연금, 여비, 주택대부, 학자금대부, 동아리지원' 5개 분야에 해당하는 질문만 답변합니다. 만약 콘도, 복지포인트, 건강검진, 어린이집, 경조금, 4대보험, 급여, 채용 등 5대 분야 외의 질문이라면 임의로 답하지 말고 아래 문구 그대로 안내하세요:
+${OUT_OF_SCOPE_FORMATTED}
+2. 할루시네이션(지어내기) 절대 금지: 제공된 사규 자료에 없는 금액, 기간, 비율, 예외 조항을 절대 추측하거나 창작하지 마세요. 사규에 명시되지 않은 특수 예외 사례는 담당자에게 확인하도록 안내하세요.
+3. 명확한 구조화:
+   - 첫 문장에서 질문의 핵심 결론(가능 여부, 금액, 기한 등)을 두괄식으로 명확히 제시하세요.
+   - 세부 조건이나 절차는 불릿(•) 기호로 깔끔하게 정리하고, 마크다운 기호(**, ##)는 쓰지 말고 일반 텍스트로 읽기 쉽게 작성하세요.
+   - 답변 마지막에는 반드시 [출처: 근거 사규 조항] 과 해당 분야 복지팀 담당자 내선번호(퇴직연금/여비: 2775, 학자금대부: 2774, 주택대부/동아리: 2768)를 명시하세요.`;
+
+            const contents = [
+                ...chatHistory.slice(-4),
+                {
+                    role: "user",
+                    parts: [{
+                        text: `[한국석유공사 사규 및 복지팀 승인 FAQ 자료]\n${statutesContext}\n\n[임직원 질문]\n${userQuery}`
+                    }]
+                }
+            ];
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: systemInstruction }] },
+                    contents: contents,
+                    generationConfig: {
+                        temperature: 0.15,
+                        maxOutputTokens: 1400
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errJson = await response.json().catch(() => ({}));
+                const errMsg = errJson?.error?.message || `HTTP ${response.status} 오류`;
+                throw new Error(errMsg);
+            }
+
+            const result = await response.json();
+            let reply = result?.candidates?.[0]?.content?.parts?.[0]?.text || "답변을 생성하지 못했습니다.";
+            reply = reply.replace(/\*\*/g, "").replace(/^\s*#+\s+/gm, "").trim();
+
+            chatHistory.push({ role: "user", parts: [{ text: userQuery }] });
+            chatHistory.push({ role: "model", parts: [{ text: reply }] });
+
+            return reply;
+        }
+
+        /* 9. 채팅 메시지 렌더링 및 양식 다운로드 버튼 자동 부착 */
         const chatMessages = document.getElementById('chatMessages');
         const userInput = document.getElementById('userInput');
 
@@ -3604,7 +3746,7 @@
 
                 const sender = document.createElement('span');
                 sender.className = 'sender-name';
-                sender.textContent = 'KNOC';
+                sender.textContent = getSavedApiKey() ? 'KNOC AI 어시스턴트 (Gemini)' : 'KNOC';
 
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
@@ -3636,7 +3778,7 @@
 
                 if (!matchedItem) {
                     hasButtons = true;
-                    const safeQ = (originalQuery || '').replace(/'/g, "\'");
+                    const safeQ = (originalQuery || '').replace(/'/g, "\\'");
                     docBox.innerHTML += `
                         <button type="button" class="doc-btn survey-btn" onclick="openSurveyWithQuestion('${safeQ}')">
                             📝 구글 폼(설문 폼)으로 이 질문 접수하기
@@ -3661,9 +3803,10 @@
 
             chatMessages.appendChild(row);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            return row;
         }
 
-        function handleSendQuery(customText) {
+        async function handleSendQuery(customText) {
             const q = (typeof customText === 'string' ? customText : userInput.value).trim();
             if (!q) return;
 
@@ -3673,12 +3816,49 @@
 
             appendMessage('user', q, null, q);
 
-            const matched = findBestMatch(q);
-            const answer = buildConversationalResponse(q, matched);
+            const searchRes = scoreAllItems(q);
+            const topCandidates = searchRes.ranked.slice(0, 8).map(r => r.item);
+            const bestMatched = (!searchRes.isOutOfDomain && searchRes.ranked.length > 0 && searchRes.ranked[0].score >= 45)
+                ? searchRes.ranked[0].item
+                : null;
+            const attachMatched = topCandidates.find(it => it.attachType) || bestMatched;
 
-            setTimeout(() => {
-                appendMessage('assistant', answer, matched, q);
-            }, 100);
+            const apiKey = getSavedApiKey();
+
+            /* API 키가 미설정된 경우 기존 사규 매칭 엔진으로 즉시 응답 */
+            if (!apiKey) {
+                const answer = buildConversationalResponse(q, bestMatched);
+                setTimeout(() => {
+                    appendMessage('assistant', answer, bestMatched, q);
+                }, 100);
+                return;
+            }
+
+            /* 명백한 5대 영역 외 질문(기념품, 콘도, 복지포인트 등)은 즉시 표준 내선번호 안내 */
+            if (searchRes.isOutOfDomain) {
+                setTimeout(() => {
+                    appendMessage('assistant', OUT_OF_SCOPE_FORMATTED, null, q);
+                }, 100);
+                return;
+            }
+
+            /* Gemini 생성형 AI 호출 */
+            const loadingRow = appendMessage('assistant', '⏳ 한국석유공사 5대 복지 사규 및 승인 데이터를 분석하여 답변을 생성하고 있습니다...', bestMatched, q);
+            try {
+                const aiReply = await callGeminiWithStatutes(q, topCandidates, apiKey);
+                loadingRow.remove();
+                const isOutReply = aiReply.includes("현재는 퇴직연금, 여비, 주택대부, 학자금대부, 동아리지원 관련된 내용만 안내해드리고 있습니다");
+                appendMessage('assistant', aiReply, isOutReply ? null : attachMatched, q);
+            } catch (err) {
+                loadingRow.remove();
+                const fallbackAnswer = buildConversationalResponse(q, bestMatched);
+                appendMessage(
+                    'assistant',
+                    `⚠️ Gemini AI 호출 중 오류가 발생하여 기본 사규 검색 결과로 안내해 드립니다.\n(오류 사유: ${err.message})\n\n────────────────────────\n\n${fallbackAnswer}`,
+                    bestMatched,
+                    q
+                );
+            }
         }
 
         document.getElementById('sendBtn').addEventListener('click', () => handleSendQuery());
@@ -3705,47 +3885,6 @@
                 qBox.value = qText;
                 qBox.focus();
             }
-        }
-
-        function submitBuiltinSurvey(e) {
-            e.preventDefault();
-            const user = document.getElementById('svUser').value.trim();
-            const domainEl = document.querySelector('input[name="svDomain"]:checked');
-            const domain = domainEl ? domainEl.value : '기타';
-            const rating = document.getElementById('svRating').value;
-            const question = document.getElementById('svQuestion').value.trim();
-            const contact = document.getElementById('svContact').value.trim();
-            const now = new Date().toLocaleString('ko-KR');
-
-            surveyRecords.push({ time: now, user, domain, rating, question, contact });
-
-            const banner = document.getElementById('surveySuccessBanner');
-            banner.style.display = 'block';
-            banner.innerHTML = `✅ <strong>설문 및 질의가 정상적으로 접수되었습니다. (${now})</strong><br>• 접수 분야: ${domain} | 작성자: ${user}<br>• 아래 [접수된 설문 내역 다운로드(.csv)] 버튼을 누르면 엑셀에서 바로 확인하실 수 있습니다.`;
-            document.getElementById('svQuestion').value = '';
-        }
-
-        function exportSurveyRecordsCsv() {
-            if (surveyRecords.length === 0) {
-                alert('아직 제출된 설문 응답이 없습니다. 설문을 먼저 작성 후 제출해 주세요.');
-                return;
-            }
-            let csv = '\uFEFF접수일시,소속및성명,질의분야,만족도,질의및건의내용,회신연락처\n';
-            for (const r of surveyRecords) {
-                const cleanQ = '"' + r.question.replace(/"/g, '""') + '"';
-                csv += `"${r.time}","${r.user}","${r.domain}","${r.rating}",${cleanQ},"${r.contact}"\n`;
-            }
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '한국석유공사_복지제도_질의설문_응답내역.csv';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 300);
         }
 
         function embedExternalGoogleForm() {
@@ -3783,6 +3922,8 @@
             document.getElementById('customGoogleFormUrl').value = DEFAULT_GOOGLE_FORM_URL;
             embedExternalGoogleForm();
         }
+
+        checkApiKeyStatus();
     </script>
 </body>
 </html>
