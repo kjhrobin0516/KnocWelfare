@@ -563,7 +563,7 @@
         <header class="site-header">
             <div class="header-inner">
                 <a class="brand-box" onclick="switchPortalTab('consult')">
-                    <img id="headerKnocLogo" class="brand-logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlIAAADaCAYAAABto6zvAADimklEQVR4nOz995MdV5bnCX7OdX8idCAktFaEIEGZZJLMJDOTmckUVdXVVV2qu2d6esZ6bWxnd23XBP+_*..." alt="한국석유공사 KNOC"><div class="brand-divider"></div>
+                    <img id="headerKnocLogo" class="brand-logo-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAADcCAYAAABzO5L7AAAACXBIWXMAAAsTAAALEwEAmpwYAAAKT2lDQ1BQaG90b3Nob3AgSUBDIHByb2ZpbGUAABWdlXjVWOu+3z/n3Jmzu1b3nBfu... (고화질 무손실 로고 내장)" alt="한국석유공사 KNOC"><div class="brand-divider"></div>
                     <div class="brand-title-group">
                         <span class="brand-title"><span class="pc-title">한국석유공사 사내 복지제도 AI 종합 포털</span><span class="m-title" style="display:none;">KNOC 사내 복지제도 AI</span></span>
                         <span class="brand-subtitle">Korea National Oil Corporation Welfare Service Portal</span>
@@ -583,7 +583,7 @@
         <section class="hero-banner">
             <div class="hero-inner">
                 <h1>한국석유공사 임직원 복지제도 AI 상담 센터</h1>
-                <p>공사 공식 사규 및 지침 원문만을 기준으로 정확하게 안내합니다.</p>
+                <p>제공된 공식 사규 및 지침 원문만을 기준으로 정확하게 안내합니다.</p>
             </div>
         </section>
 
@@ -610,7 +610,7 @@
                         <div class="chat-card">
                             <div class="chat-card-header">
                                 <div class="chat-card-header-left">
-                                    <span>🤖 KNOC 복지제도 공식 사규 AI 어시스턴트</span>
+                                    <span>🤖 KNOC 복지제도 AI 상담 어시스턴트</span>
                                     <span id="memoryStatusBadge" style="font-size:11.5px; background:#eff6ff; color:#0056b3; border:1px solid #bfdbfe; padding:2px 8px; border-radius:999px; font-weight:700;">🧠 대화 기억 ON</span>
                                 </div>
                                 <div style="display:flex; gap:6px;">
@@ -620,7 +620,7 @@
 
                             <div class="chat-messages" id="chatMessages">
                                 <div class="message-row assistant">
-                                    <div class="avatar"><img id="welcomeAvatarImg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPUAAAD1CAYAAACIsbNlAAB3+0lEQVR4nO3953ddV5LmDf5i73MdvCVoQO+NRFmmlDIpKSVlKk1VVnV2dVV3dffb1d3vemdNz/S3+T/mw6xZ092rbJfJyqpKozRKpVLeWxqJ3gIEQHgPSHIP..." alt="KNOC"></div>
+                                    <div class="avatar"><img id="welcomeAvatarImg" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAACAAAACAAAAAgCAYAAABz0r29AA..." alt="KNOC"></div>
                                     <div class="message-content">
                                         <span class="sender-name">KNOC 복지제도 AI</span>
                                         <div class="bubble">※ 생성형 AI가 만든 답변은 오류를 포함할 수 있습니다. 정확한 확인을 위해서 담당자와 상의해주시기 바랍니다.
@@ -716,7 +716,6 @@
         const DEFAULT_GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc3-4GyUg-RO6F_-k5696qtQcHvYvB6aAXjoHpUczRe0D-tcg/viewform?usp=publish-editor";
         const FIXED_PREFIX = "※ 생성형 AI가 만든 답변은 오류를 포함할 수 있습니다. 정확한 확인을 위해서 담당자와 상의해주시기 바랍니다.\n\n";
         
-        // 업로드해주신 모든 공식 규정 및 180여개 FAQ가 온전히 탑재된 KNOC_DB
         const KNOC_DB = [
             {"id": "REG_TR_01", "sheet": "퇴직연금", "cat": "승진보상금(승급 추가부담금)", "q": "확정기여형(DC) 퇴직연금 승진보상금 지급 기준과 횟수는 어떻게 되나요?", "a": "[핵심 결론]\n한국석유공사 「확정기여형/혼합형 퇴직연금규약」 제15조 및 [별지 3]에 따라, 승급으로 인해 임금 상승이 발생한 가입자에 대하여는 승급 후 초회 부담금 납입시를 기준으로 승급 전 근무한 기간에 대하여 추가 부담금을 납입합니다.\n\n[세부 기준]\n• 지급 대상: 직급 승급 시 임금 상승이 발생한 확정기여형(DC) 및 혼합형 가입자\n• 산출 방식: 승급 후 초회 부담금 납입 시를 기준으로 승급 전 근무한 기간에 대하여 DB 퇴직금과 비교하여 차액 부담금을 추가로 납입합니다.\n• 제한 규정: 임금피크제 관련 제한이나 재직 중 1회 제한 규정이 없으며, 직급 승급이 발생할 때마다 매번 산정하여 추가 납입됩니다.", "s": "한국석유공사 확정기여형/혼합형 퇴직연금규약 제15조 및 별지 3", "keywords": ["승진보상금", "승진", "승급", "추가부담금", "퇴직연금", "dc", "혼합형", "규약"]},
             {"id": "REG_TR_02", "sheet": "퇴직연금", "cat": "중도인출", "q": "확정기여형(DC) 퇴직연금 중도인출 사유와 요건은 무엇인가요?", "a": "[핵심 결론]\n한국석유공사 「확정기여형 퇴직연금규약」 제33조 및 법령에 따라 DC형 가입자는 법정 사유 발생 시 적립금을 중도인출할 수 있습니다.\n\n[세부 기준]\n• 중도인출 사유: \n1. 무주택자인 가입자가 본인 명의로 주택을 구입하는 경우\n2. 무주택자인 가입자가 주거를 목적으로 전세금 또는 보증금을 부담하는 경우 (가입자당 1회 한정)\n3. 가입자, 배우자 또는 부양가족이 6개월 이상 요양을 하는 경우로서 본인 연간 임금총액의 12.5% 초과 의료비를 부담하는 경우\n4. 5년 이내 파산선고 또는 개인회생절차개시 결정을 받은 경우\n5. 천재지변 등 고용노동부장관이 정한 사유", "s": "한국석유공사 확정기여형 퇴직연금규약 제33조", "keywords": ["중도인출", "퇴직연금", "dc", "주택구입", "전세금", "보증금", "의료비", "파산", "개인회생"]},
@@ -1004,7 +1003,6 @@
             }
         }
 
-        // 전역 함수 등록으로 onclick 및 이벤트 바인딩 보장
         window.switchPortalTab = switchPortalTab;
         window.openMobileContactSheet = openMobileContactSheet;
         window.closeMobileContactSheet = closeMobileContactSheet;
